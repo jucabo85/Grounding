@@ -7,3 +7,4 @@ pytest
 numpy
 python-docx
 scipy
+shapely
