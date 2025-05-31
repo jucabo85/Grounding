@@ -1,0 +1,12 @@
+{
+    "https://api.shinyapps.io": {
+        "server_url": "https://api.shinyapps.io",
+        "filename": "/home/jucabo/ece792/Grounding/GUI",
+        "app_url": "https://groundestimator.shinyapps.io/firstapp/",
+        "app_id": 14816152,
+        "app_guid": null,
+        "title": "firstapp",
+        "app_mode": "python-shiny",
+        "app_store_version": 1
+    }
+}

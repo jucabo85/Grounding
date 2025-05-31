@@ -99,7 +99,9 @@ with ui.sidebar(title="Main Inputs"):
     ui.input_checkbox("Advanced_Options", "Advanced Options", False)
     with ui.panel_conditional("input.Advanced_Options"):
         ui.input_select("Rpt_model", "Grounding Resistance Model", {"Sverak": "Sverak", "Schwarz": "Schwarz", "Simplified 1": "Simplified 1", "Simplified 2": "Simplified 2"}, selected="Sverak")
-        ui.input_text("Ambient_temp", "Ambient Temperature (Celsius)", value=40)
+        ui.input_text("Ambient_temp", "Ambient Temperature (°C)", value=40)
+        ui.input_checkbox("input_OverrideMesh", "Override DWG Mesh Size", False)
+        ui.input_text("Parallel_Separ", "Mesh Size (m)", value=8)
 
 with ui.layout_column_wrap(width=1/2):
 
@@ -177,6 +179,8 @@ with ui.layout_column_wrap(width=1/2):
                     input.Advanced_Options,
                     input.Rpt_model,
                     input.Ambient_temp,
+                    input.OverrideMesh,
+                    input.Parallel_Separ,
                     ignore_init=True,
                 )
                 def showing_results1():
@@ -205,6 +209,8 @@ with ui.layout_column_wrap(width=1/2):
                     input.Advanced_Options,
                     input.Rpt_model,
                     input.Ambient_temp,
+                    input.OverrideMesh,
+                    input.Parallel_Separ,
                     ignore_init=True,
                 )
                 def showing_results2():
@@ -260,15 +266,16 @@ def units():
 
     # Conversion dictionary for units
     unit_conversion = {
-        "m": ("meters","m", "m", 1.0, 1),  # 1 meter = 1 meter
-        "mm": ("millimeters","mm", "m", 0.001, 1.0),  # 1 mm = 0.001 meters
-        "in": ("inches", "in", "in",  0.0254, 0.0254),  # 1 inch = 0.0254 meters
+        "m": ("meters","m", "m","m", 1.0, 1,1),  # 1 meter = 1 meter
+        "mm": ("millimeters","mm","m", "m", 0.001, 1.0, 1.0),  # 1 mm = 0.001 meters
+        "in": ("inches", "in", "in", "ft",  0.0254, 0.0254, 0.0254*12),  # 1 inch = 0.0254 meters and 12 inch=1 ft
     }
-    _,unit_label,unit_label_SI, conversion_factor, conversion_factor_SI = unit_conversion[selected_unit]
+    _,unit_label,unit_label_SI, unit_length, conversion_factor, conversion_factor_SI, conversion_factor_lenght= unit_conversion[selected_unit]
     ui.update_text("Crushed_rock_depth", label=f"Crushed Rock depth ({unit_label_SI})", value=round(0.15/conversion_factor_SI,1))
     ui.update_text("Depth",label=f"Burying Depth ({unit_label_SI})", value=round(0.45/conversion_factor_SI,2))
-    ui.update_text("Rod_lenght",label=f"Rod Length ({unit_label_SI})", value=round(3/conversion_factor_SI,2))
+    ui.update_text("Rod_lenght",label=f"Rod Length ({unit_length})", value=round(3/conversion_factor_lenght,2))
     ui.update_text("Rod_diameter",label=f"Rod Diameter ({unit_label_SI})", value=round(0.015875/conversion_factor_SI,4))
+    ui.update_text("Parallel_Separ", label=f"Mesh Size ({unit_length})", value=round(8/conversion_factor_lenght,2))
 
     
 
@@ -293,13 +300,15 @@ def Calc_results():
     rod_length = float(input.Rod_lenght())  # Rod Length (meters)
     rod_diameter = float(input.Rod_diameter())  # Rod Diameter (meters)
     case = input.Rpt_model() if input.Advanced_Options() else "Sverak"  # Grounding Resistance Model
+    override_mesh=input.OverrideMesh()    #Input override Mesh
+    parallel_separ=float(input.Parallel_Separ()) #advanced options to define D
 
     # Ensure filepath is provided
     if not filepath:
         results={}
         return results, filepath, None
     
-    inputs_collection=(filepath, fileunits, conductor_type, short_circuit_conductor, short_circuit, fault_duration, person_weight,cable_depth, depth_crushed_rock, ro, ros, ambient_temperature, split_factor, rod_length,rod_diameter,case)
+    inputs_collection=(filepath, fileunits, conductor_type, short_circuit_conductor, short_circuit, fault_duration, person_weight,cable_depth, depth_crushed_rock, ro, ros, ambient_temperature, split_factor, rod_length,rod_diameter,case, override_mesh, parallel_separ)
     inputs_dict = {
     "Filepath": inputs_collection[0],
     "DXF Drawing Units": inputs_collection[1],
@@ -317,13 +326,15 @@ def Calc_results():
     "Rods Diameter": f"{inputs_collection[14]} meters",
     "Ambient Temperature": f"{inputs_collection[11]} °C",
     "Grounding Resistance Model": inputs_collection[15],
+    "Override Drawing Mesh": inputs_collection[16],
+    "Mesh Size": inputs_collection[17]
     }
 
     # Call the ground_grid function
     results = ground_grid(
         filepath, fileunits, conductor_type, short_circuit_conductor, short_circuit,
         fault_duration, person_weight, cable_depth, depth_crushed_rock, ro, ros,
-        ambient_temperature, split_factor, rod_length, rod_diameter, case
+        ambient_temperature, split_factor, rod_length, rod_diameter, case, override_mesh, parallel_separ
     )
     # Format the results for display in a tabulated way ---- TEXT----
     # formatted_results = "\n".join([f"{key:<30}: {value}" for key, value in results.items()])

@@ -16,7 +16,7 @@ Geo_Grid=None
 # Defining Main calculation function
 
 def ground_grid(filepath, fileunits,conductor_type, short_circuit_conductor,short_circuit, fault_duration, person_weight, cable_depth,
-                depth_crushed_rock, ro, ros, ambient_temperature, split_factor, rod_length, rod_diameter, case, nrods=None):
+                depth_crushed_rock, ro, ros, ambient_temperature, split_factor, rod_length, rod_diameter, case, override_mesh, parallel_separ, nrods=None):
     
     # Parse the DXF file to get the lines and rods
     lines_list_raw, rods_list_raw = process_dxf(filepath)
@@ -34,6 +34,12 @@ def ground_grid(filepath, fileunits,conductor_type, short_circuit_conductor,shor
     cable_area,selected_cable, cable_diameter=cable_sizing(conductor_type, short_circuit_conductor, fault_duration, 
                                                 ambient_temperature)
     
+    # Check if the mesh Size wants to be overrrided
+    if override_mesh:
+        D=parallel_separ
+    else:
+        D=Geo_Grid.max_separation
+
 
     # Call the debugging function for inputs
     # debug_inputs_ground_grid(filepath, lines_list_raw, rods_list_raw, lines_list, rods_list, Geo_Grid, cable_area, selected_cable, cable_diameter, rod_length, effective_short_circuit)     
@@ -46,7 +52,7 @@ def ground_grid(filepath, fileunits,conductor_type, short_circuit_conductor,shor
 
     # Instantiate the GroundingGrid class
     G_grid = GroundingGrid(ro, cable_depth, cable_diameter/1000, len(rods_list), rod_length, rod_diameter,
-                           case=case, location_rods=Geo_Grid.location_rods, D=Geo_Grid.max_separation, shape=Geo_Grid.shape,
+                           case=case, location_rods=Geo_Grid.location_rods, D=D, shape=Geo_Grid.shape,
                             side1=Geo_Grid.side1, side2=Geo_Grid.side2, side3=Geo_Grid.side3, side4=Geo_Grid.side4,
                             A=Geo_Grid.area, Lc=Geo_Grid.line_lengths,Lp=Geo_Grid.perimeter, Dm=Geo_Grid.max_dist,
                             Lx=Geo_Grid.max_length_x, Ly=Geo_Grid.max_length_y)
@@ -221,11 +227,13 @@ if __name__ == '__main__':
     rod_length = 7.5 # meters
     rod_diameter = 0.02  # meters
     case="Sverak"
+    override_mesh=False
+    parallel_separ=8
 
     
 
     results = ground_grid(filepath, fileunits, conductor_type, short_circuit_conductor,short_circuit, fault_duration, person_weight, cable_depth,
-                          depth_crushed_rock, ro, ros, ambient_temperature, split_factor, rod_length, rod_diameter, case)
+                          depth_crushed_rock, ro, ros, ambient_temperature, split_factor, rod_length, rod_diameter, case, override_mesh, parallel_separ)
 
     print("Results:", results)
 
@@ -248,12 +256,14 @@ ambient_temperature = 40  # Celsius
 split_factor = 0.6  # Unitless
 rod_length = 7.5 # meters
 rod_diameter = 0.02  # meters
+override_mesh=False
+parallel_separ=8
 case="Sverak"
 
 
 
 results = ground_grid(filepath, fileunits, conductor_type, short_circuit_conductor,short_circuit, fault_duration, person_weight, cable_depth,
-                        depth_crushed_rock, ro, ros, ambient_temperature, split_factor, rod_length, rod_diameter, case)
+                        depth_crushed_rock, ro, ros, ambient_temperature, split_factor, rod_length, rod_diameter, case, override_mesh, parallel_separ)
 
 print("Results:", results)
 
@@ -281,7 +291,7 @@ case="Sverak"
 
 
 results = ground_grid(filepath, fileunits, conductor_type, short_circuit_conductor,short_circuit, fault_duration, person_weight, cable_depth,
-                        depth_crushed_rock, ro, ros, ambient_temperature, split_factor, rod_length, rod_diameter, case)
+                        depth_crushed_rock, ro, ros, ambient_temperature, split_factor, rod_length, rod_diameter, case, override_mesh, parallel_separ)
 
 print("Results:", results)
 
@@ -309,7 +319,7 @@ case="Sverak"
 
 
 results = ground_grid(filepath, fileunits, conductor_type, short_circuit_conductor,short_circuit, fault_duration, person_weight, cable_depth,
-                        depth_crushed_rock, ro, ros, ambient_temperature, split_factor, rod_length, rod_diameter, case)
+                        depth_crushed_rock, ro, ros, ambient_temperature, split_factor, rod_length, rod_diameter, case, override_mesh, parallel_separ)
 
 print("Results:", results)
 

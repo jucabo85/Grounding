@@ -1,0 +1,7 @@
+shiny
+ezdxf
+ipykernel
+matplotlib
+pandas
+pytest
+numpy
